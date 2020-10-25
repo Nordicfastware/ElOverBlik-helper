@@ -2,14 +2,29 @@
 
 ## config
 ```
-    "db_ip": "192.168.1.10", # database ip (or hostname)
-    "db_name": "eloversigt", # database name (will create if it doesn't exsist)
-    "db_port": 8086, # port (http only, create a issue if ssl is needed)
-    "db_user": "", # username for database keep blank is no user
-    "db_pass": "", # password for database keep blank is no user
-    "sensorPrefix": "sensor.eloverblik_energy_", # the start of the name of the sensor to get values from (should not be nesseary to change)
-    "webhookUrl": "", # set to url to post a json object when done running.
-    "Timezone": "Europe/Copenhagen" # yeah i don't know why this would ever be anything else than Copenhagen
+    db_ip: "192.168.1.10" # database ip (or hostname)
+    db_measurement_name: "eloversigt" # database name (will create if it doesn't exsist)
+    db_port: 8086 # port (http only, create a issue if ssl is needed)
+    db_user: "" # username for database keep blank is no user
+    db_pass: "" # password for database keep blank is no user
+    sensorPrefix: "sensor.eloverblik_energy_" # optional, to be used only if "sets are not used" the start of the name of the sensor to get values from (should not be nesseary to change)
+    sets: #to be used if several metering points ID must be used. Then above "sensorPrefix:" shall remain blank.
+        - name: "Mertering Point 1" #Friendly Name of mertering point 1
+          sensorPrefix: sensor.eloverblik_meterid1_energy_ #sensor of the metering point as setup in Eloverblik integration
+        - name: "Mertering Point 2" #Friendly Name of mertering point 2
+          sensorPrefix: sensor.eloverblik_meterid2_energy_ #sensor of the metering point as setup in Eloverblik integration
+    webhookUrl: "", # set to url to post a json object when done running.
+    Timezone: "Europe/Copenhagen" # yeah i don't know why this would ever be anything else than Copenhagen
+    
+
+
+sets:
+  - name: Antwerpengade
+    sensorPrefix: sensor.eloverblik_antwerpengade_energy_
+  - name: Bastevangen
+    sensorPrefix: sensor.eloverblik_bastevangen_energy_
+webhookUrl: ''
+Timezone: Europe/Copenhagen
 ```
 ## using
 
@@ -23,27 +38,20 @@ the way i use this:
 
 ### Example Home-assistant config
 
-#### Sensor
-```
-platform: template
-sensors:
-  metering_date:
-    friendly_name: "Metering Date"
-    unit_of_measurement: ''
-    value_template: "{{ state_attr('sensor.eloverblik_energy_total', 'Metering date') }}"
-    entity_id: sensor.eloverblik_energy_total
-```
 #### Automations
 ```
-alias: "energy updates"
-initial_state: 'on'
+alias: Eloverblikhelperupdate
 trigger:
-  - entity_id: sensor.metering_date
-    platform: state
-action:
+  - platform: state
+    entity_id: sensor.eloverblik_meterid1_energy_total
+    attribute: Metering date
+  - platform: state
+    entity_id: sensor.eloverblik_meterid2_energy_total
+    attribute: Metering date
+  action:
   - service: hassio.addon_start
     data:
-      addon: "db328613_eloverblik_helper"
+      addon: db328613_eloverblik_helper
 ```
 
 ```
